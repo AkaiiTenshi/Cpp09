@@ -1,74 +1,27 @@
-PmergeMe.hpp
-#ifndef PMERGE_ME_HPP
-#define PMERGE_ME_HPP
-#include <vector>
-#include <deque>
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <cstdlib>
-#include <climits>
-#include <sys/time.h>
-#include <algorithm>
-class PmergeMe {
-public:
-    // Méthodes principales pour les deux conteneurs
-    static void sortVector(std::vector<int>& data);
-    static void sortDeque(std::deque<int>& data);
-    
-    // Validation et parsing
-    static bool parseAndValidate(int argc, char** argv, std::vector<int>& vec, std::deque<int>& deq);
-    
-    // Affichage
-    static void printSequence(const std::string& prefix, const std::vector<int>& data);
-    static void printSequence(const std::string& prefix, const std::deque<int>& data);
-    
-    // Mesure du temps
-    static double getTimeDifference(struct timeval start, struct timeval end);
-private:
-    // === VECTOR IMPLEMENTATION ===
-    static void fordJohnsonVector(std::vector<int>& data);
-    static std::vector<int> generateJacobsthalVector(size_t size);
-    static void binaryInsertVector(std::vector<int>& mainChain, int value, size_t maxPos);
-    
-    // === DEQUE IMPLEMENTATION ===
-    static void fordJohnsonDeque(std::deque<int>& data);
-    static std::vector<int> generateJacobsthalDeque(size_t size);
-    static void binaryInsertDeque(std::deque<int>& mainChain, int value, size_t maxPos);
-    
-    // Utilitaires
-    static bool isPositiveInteger(const std::string& str);
-    static bool hasDuplicates(const std::vector<int>& data);
-};
-#endif
-Réflexion sur le .hpp :
-- Méthodes statiques : pas besoin d'instancier la classe
-- Séparation claire vector/deque
-- sys/time.h pour gettimeofday() (plus précis que clock())
-- Validation robuste avec parseAndValidate
----
-PmergeMe.cpp
 #include "PmergeMe.hpp"
+
 // ========================================
 // VALIDATION ET PARSING
 // ========================================
+
 bool PmergeMe::isPositiveInteger(const std::string& str) {
     if (str.empty()) return false;
     
-    // Vérifier que tous les caractères sont des chiffres
+    // Vérifier que tous les caractères sont des chiffres (méthode C++)
     for (size_t i = 0; i < str.length(); ++i) {
-        if (!isdigit(str[i])) return false;
+        if (str[i] < '0' || str[i] > '9') return false;
     }
     
-    // Vérifier l'overflow
+    // Vérifier l'overflow (méthode C++ avec stringstream)
     std::stringstream ss(str);
     long long num;
     ss >> num;
     
-    if (num < 0 || num > INT_MAX) return false;
+    if (ss.fail() || num < 0 || num > INT_MAX) return false;
     
     return true;
 }
+
 bool PmergeMe::hasDuplicates(const std::vector<int>& data) {
     std::vector<int> sorted = data;
     std::sort(sorted.begin(), sorted.end());
@@ -78,6 +31,7 @@ bool PmergeMe::hasDuplicates(const std::vector<int>& data) {
     }
     return false;
 }
+
 bool PmergeMe::parseAndValidate(int argc, char** argv, std::vector<int>& vec, std::deque<int>& deq) {
     if (argc < 2) {
         std::cerr << "Error: No arguments provided" << std::endl;
@@ -92,7 +46,11 @@ bool PmergeMe::parseAndValidate(int argc, char** argv, std::vector<int>& vec, st
             return false;
         }
         
-        int num = atoi(arg.c_str());
+        // Convertir avec stringstream (méthode C++)
+        std::stringstream ss(arg);
+        int num;
+        ss >> num;
+        
         vec.push_back(num);
         deq.push_back(num);
     }
@@ -105,9 +63,11 @@ bool PmergeMe::parseAndValidate(int argc, char** argv, std::vector<int>& vec, st
     
     return true;
 }
+
 // ========================================
 // AFFICHAGE
 // ========================================
+
 void PmergeMe::printSequence(const std::string& prefix, const std::vector<int>& data) {
     std::cout << prefix;
     for (size_t i = 0; i < data.size() && i < 5; ++i) {
@@ -117,6 +77,7 @@ void PmergeMe::printSequence(const std::string& prefix, const std::vector<int>& 
     if (data.size() > 5) std::cout << " [...]";
     std::cout << std::endl;
 }
+
 void PmergeMe::printSequence(const std::string& prefix, const std::deque<int>& data) {
     std::cout << prefix;
     for (size_t i = 0; i < data.size() && i < 5; ++i) {
@@ -126,17 +87,20 @@ void PmergeMe::printSequence(const std::string& prefix, const std::deque<int>& d
     if (data.size() > 5) std::cout << " [...]";
     std::cout << std::endl;
 }
+
 // ========================================
 // MESURE DU TEMPS
 // ========================================
-double PmergeMe::getTimeDifference(struct timeval start, struct timeval end) {
-    double startTime = start.tv_sec * 1000000.0 + start.tv_usec;
-    double endTime = end.tv_sec * 1000000.0 + end.tv_usec;
-    return endTime - startTime;
+
+double PmergeMe::getTimeDifference(clock_t start, clock_t end) {
+    // Retourne le temps en microsecondes (C++)
+    return (static_cast<double>(end - start) / CLOCKS_PER_SEC) * 1000000.0;
 }
+
 // ========================================
 // GÉNÉRATION DE LA SÉQUENCE JACOBSTHAL
 // ========================================
+
 std::vector<int> PmergeMe::generateJacobsthalVector(size_t size) {
     std::vector<int> jacobsthal;
     
@@ -152,7 +116,6 @@ std::vector<int> PmergeMe::generateJacobsthalVector(size_t size) {
     }
     
     // Construire la séquence d'insertion
-    size_t pos = 1; // Commencer après le premier élément
     for (size_t i = 2; i < jacob.size(); ++i) {
         size_t current = jacob[i];
         size_t previous = jacob[i - 1];
@@ -169,13 +132,16 @@ std::vector<int> PmergeMe::generateJacobsthalVector(size_t size) {
     
     return jacobsthal;
 }
+
 std::vector<int> PmergeMe::generateJacobsthalDeque(size_t size) {
     // Même implémentation pour deque
     return generateJacobsthalVector(size);
 }
+
 // ========================================
 // INSERTION BINAIRE - VECTOR
 // ========================================
+
 void PmergeMe::binaryInsertVector(std::vector<int>& mainChain, int value, size_t maxPos) {
     if (mainChain.empty()) {
         mainChain.push_back(value);
@@ -200,9 +166,11 @@ void PmergeMe::binaryInsertVector(std::vector<int>& mainChain, int value, size_t
     
     mainChain.insert(mainChain.begin() + left, value);
 }
+
 // ========================================
 // INSERTION BINAIRE - DEQUE
 // ========================================
+
 void PmergeMe::binaryInsertDeque(std::deque<int>& mainChain, int value, size_t maxPos) {
     if (mainChain.empty()) {
         mainChain.push_back(value);
@@ -225,9 +193,11 @@ void PmergeMe::binaryInsertDeque(std::deque<int>& mainChain, int value, size_t m
     
     mainChain.insert(mainChain.begin() + left, value);
 }
+
 // ========================================
 // FORD-JOHNSON ALGORITHM - VECTOR
 // ========================================
+
 void PmergeMe::fordJohnsonVector(std::vector<int>& data) {
     size_t n = data.size();
     
@@ -263,7 +233,20 @@ void PmergeMe::fordJohnsonVector(std::vector<int>& data) {
         fordJohnsonVector(largerElements);
     }
     
-    // Étape 4 : Construire la main chain
+    // Étape 4 : Réorganiser les pairs selon l'ordre des largerElements triés
+    std::vector<std::pair<int, int> > sortedPairs;
+    for (size_t i = 0; i < largerElements.size(); ++i) {
+        // Trouver le pair correspondant à ce larger element
+        for (size_t j = 0; j < pairs.size(); ++j) {
+            if (pairs[j].first == largerElements[i]) {
+                sortedPairs.push_back(pairs[j]);
+                break;
+            }
+        }
+    }
+    pairs = sortedPairs;
+    
+    // Étape 5 : Construire la main chain
     std::vector<int> mainChain;
     
     // Insérer le plus petit du premier pair en premier
@@ -276,7 +259,7 @@ void PmergeMe::fordJohnsonVector(std::vector<int>& data) {
         mainChain.push_back(largerElements[i]);
     }
     
-    // Étape 5 : Préparer les pend elements (les petits sauf le premier déjà inséré)
+    // Étape 6 : Préparer les pend elements (les petits sauf le premier déjà inséré)
     std::vector<int> pend;
     for (size_t i = 1; i < pairs.size(); ++i) {
         pend.push_back(pairs[i].second);
@@ -313,12 +296,15 @@ void PmergeMe::fordJohnsonVector(std::vector<int>& data) {
     // Copier le résultat
     data = mainChain;
 }
+
 void PmergeMe::sortVector(std::vector<int>& data) {
     fordJohnsonVector(data);
 }
+
 // ========================================
 // FORD-JOHNSON ALGORITHM - DEQUE
 // ========================================
+
 void PmergeMe::fordJohnsonDeque(std::deque<int>& data) {
     size_t n = data.size();
     
@@ -348,6 +334,19 @@ void PmergeMe::fordJohnsonDeque(std::deque<int>& data) {
     if (largerElements.size() > 1) {
         fordJohnsonDeque(largerElements);
     }
+    
+    // Réorganiser les pairs selon l'ordre des largerElements triés
+    std::vector<std::pair<int, int> > sortedPairs;
+    for (size_t i = 0; i < largerElements.size(); ++i) {
+        // Trouver le pair correspondant à ce larger element
+        for (size_t j = 0; j < pairs.size(); ++j) {
+            if (pairs[j].first == largerElements[i]) {
+                sortedPairs.push_back(pairs[j]);
+                break;
+            }
+        }
+    }
+    pairs = sortedPairs;
     
     std::deque<int> mainChain;
     
@@ -389,83 +388,7 @@ void PmergeMe::fordJohnsonDeque(std::deque<int>& data) {
     
     data = mainChain;
 }
+
 void PmergeMe::sortDeque(std::deque<int>& data) {
     fordJohnsonDeque(data);
 }
-Réflexions clés sur le .cpp :
-1. Validation robuste :
-   - isPositiveInteger : vérifie caractère par caractère + overflow
-   - hasDuplicates : tri puis comparaison adjacente (O(n log n))
-2. Jacobsthal :
-   - Génère J(n) = J(n-1) + 2*J(n-2)
-   - Crée la séquence d'insertion optimale
-   - Ordre décroissant entre deux nombres de Jacobsthal
-3. Insertion binaire manuelle :
-   - Pas d'utilisation de std::lower_bound pour être original
-   - Recherche limitée par maxPos (optimisation)
-4. Ford-Johnson récursif :
-   - Tri récursif des "grands éléments"
-   - Construction de la main chain
-   - Insertion optimale avec Jacobsthal
----
-main.cpp
-#include "PmergeMe.hpp"
-int main(int argc, char** argv) {
-    std::vector<int> vec;
-    std::deque<int> deq;
-    
-    // Parser et valider les entrées
-    if (!PmergeMe::parseAndValidate(argc, argv, vec, deq)) {
-        return 1;
-    }
-    
-    // Afficher la séquence avant tri
-    PmergeMe::printSequence("Before: ", vec);
-    
-    // === TRIER AVEC VECTOR ===
-    struct timeval startVec, endVec;
-    gettimeofday(&startVec, NULL);
-    PmergeMe::sortVector(vec);
-    gettimeofday(&endVec, NULL);
-    double timeVec = PmergeMe::getTimeDifference(startVec, endVec);
-    
-    // Afficher la séquence après tri
-    PmergeMe::printSequence("After:  ", vec);
-    
-    // === TRIER AVEC DEQUE ===
-    struct timeval startDeq, endDeq;
-    gettimeofday(&startDeq, NULL);
-    PmergeMe::sortDeque(deq);
-    gettimeofday(&endDeq, NULL);
-    double timeDeq = PmergeMe::getTimeDifference(startDeq, endDeq);
-    
-    // Afficher les temps
-    std::cout << "Time to process a range of " << vec.size() 
-              << " elements with std::vector : " << timeVec << " us" << std::endl;
-    std::cout << "Time to process a range of " << deq.size() 
-              << " elements with std::deque : " << timeDeq << " us" << std::endl;
-    
-    return 0;
-}
-Réflexions sur main.cpp :
-- gettimeofday() : précision microseconde
-- Mesure le temps TOTAL (parsing inclus)
-- Affichage conforme aux specs
----
-Makefile
-NAME = PmergeMe
-SRC = main.cpp PmergeMe.cpp
-CC = c++
-CFLAGS = -Wall -Werror -Wextra -std=c++98 -g3
-OBJ = $(SRC:.cpp=.o)
-all: $(NAME)
-%.o: %.cpp PmergeMe.hpp
-	$(CC) $(CFLAGS) -c $< -o $@
-$(NAME): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
-clean:
-	rm -rf $(OBJ)
-fclean: clean
-	rm -rf $(NAME)
-re: fclean all
-.PHONY: all re clean fclean

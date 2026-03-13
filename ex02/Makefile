@@ -1,25 +1,30 @@
-NAME: btc
-SRC: main.cpp BitcoinExchange.cpp
-CC: c++
-CFLAGS: -Wall -Werror -Wextra -std=c++98 -g3
-OBJ:$(SRC:.cpp=.o)
+NAME = PmergeMe
+SRC = main.cpp PmergeMe.cpp
+SRC_PATH = ./srcs/
+OBJS = ${patsubst %.cpp, ${OBJS_PATH}/%.o, ${SRC}}
+OBJS_PATH = ./objs/
+CC = c++
+CFLAGS = -Wall -Wextra -Werror -std=c++98
+INC = -I includes/
 
-all: $(NAME)
+vpath %.cpp ${SRC_PATH}
 
-%.o: %.cpp
-	$(CC) $(CFLAGS) $(SRC) -c $<
 
-$(NAME): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
+all: ${NAME}
 
-clean: 
-	rm -rf $(OBJ)
+${OBJS}: ${OBJS_PATH}/%.o: %.cpp Makefile
+	@mkdir -p ${OBJS_PATH}
+	@$(CC) $(CFLAGS) -c $< -o $@ $(INC)
+
+${NAME}: ${OBJS}
+	$(CC) $(CFLAGS) -o ${NAME} ${OBJS} $(INC)
+
+clean:
+	@rm -rf ${OBJS_PATH}
 
 fclean: clean
-	rm -rf $(NAME)
+	@rm -f ${NAME}
 
 re: fclean all
 
-.PHONY: all re clean fclean
-
-
+.PHONY: all clean fclean re
