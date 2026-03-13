@@ -11,7 +11,7 @@ class RPN
 	private:
 		bool	isOperator(const std::string& token) const;
 		bool	isNumber(const std::string& token) const;
-		int		calculus_func(int a, int b, char op) const;
+		long long		calculus_func(long long a, long long b, char op) const;
 
 	public:
 		RPN();

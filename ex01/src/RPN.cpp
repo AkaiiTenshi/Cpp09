@@ -1,5 +1,6 @@
 #include "RPN.hpp"
 #include <iostream>
+#include <stdexcept>
 
 RPN::RPN()
 {
@@ -35,7 +36,7 @@ bool RPN::isOperator(const std::string& token) const
 			token[0] == '*' || token[0] == '/');
 }
 
-int RPN::calculus_func(int a, int b, char op) const
+long long RPN::calculus_func(long long a, long long b, char op) const
 {
 	switch (op)
 	{
@@ -76,8 +77,10 @@ int RPN::launch_rpn(const std::string& expression) const
 			int left = operands.top();
 			operands.pop();
 			
-			int result = calculus_func(left, right, token[0]);
-			operands.push(result);
+			long long result = calculus_func(static_cast<long long>(left), static_cast<long long>(right), token[0]);
+			if(result < -2147483648 || result > 2147483647)
+				throw std::out_of_range("Error: result is out of int scope");
+			operands.push(static_cast<int>(result));
 		}
 		else
 		{
