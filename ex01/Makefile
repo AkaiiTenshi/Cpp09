@@ -1,19 +1,25 @@
-NAME: btc
-SRC: main.cpp BitcoinExchange.cpp
-CC: c++
-CFLAGS: -Wall -Werror -Wextra -std=c++98 -g3
-OBJ:$(SRC:.cpp=.o)
+NAME = RPN
+SRC = main.cpp RPN.cpp
+SRC_DIR = ./src/
+OBJ = ${patsubst %.cpp, $(OBJ_DIR)%.o, $(SRC)}
+OBJ_DIR = ./obj/
+CC = c++ 
+CFLAGS = -Wall -Werror -Wextra -g3 -std=c++98
+INC = -I ./include/
+
+vpath %.cpp $(SRC_DIR)
 
 all: $(NAME)
 
-%.o: %.cpp
-	$(CC) $(CFLAGS) $(SRC) -c $<
+$(OBJ): $(OBJ_DIR)%.o: %.cpp Makefile
+	mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) $(INC) -c $< -o $@
 
 $(NAME): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
+	$(CC) $(CFLAGS) $(INC) $(OBJ) -o $(NAME)
 
 clean: 
-	rm -rf $(OBJ)
+	rm -rf $(OBJ_DIR)
 
 fclean: clean
 	rm -rf $(NAME)
