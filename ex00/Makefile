@@ -1,16 +1,14 @@
-SRCS = main.cpp BitcoinExchange.cpp
-SRCS_PATH = ./srcs/
-
-OBJS = ${patsubst %.cpp, ${OBJS_PATH}/%.o, ${SRCS}}
-OBJS_PATH = ./objs/
-
-CC = c++
-INC = -I includes/
-CFLAGS = -Wall -Wextra -Werror -std=c++98
-
-vpath %.cpp ${SRCS_PATH}
-
 NAME = btc
+SRC = main.cpp BitcoinExchange.cpp
+SRC_PATH = ./srcs/
+OBJS = ${patsubst %.cpp, ${OBJS_PATH}/%.o, ${SRC}}
+OBJS_PATH = ./objs/
+CC = c++
+CFLAGS = -Wall -Wextra -Werror -std=c++98
+INC = -I includes/
+
+vpath %.cpp ${SRC_PATH}
+
 
 all: ${NAME}
 
